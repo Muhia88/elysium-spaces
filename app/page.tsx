@@ -2,18 +2,29 @@
 
 import Link from 'next/link';
 import Scene from '@/components/Scene';
+import Minimap from '@/components/Minimap';
 import { useRoomStore } from '@/store/useRoomStore';
 
 export default function Page() {
   const addObject = useRoomStore((state) => state.addObject);
+  const updateObject = useRoomStore((state) => state.updateObject);
+  const selectedObjectId = useRoomStore((state) => state.selectedObjectId);
 
-  const handleAddFurniture = (modelUrl: string) => {
-    addObject({
-      id: Math.random().toString(36).substring(7),
-      modelUrl,
-      position: [0, -2, 0], // Spawn at floor level
-      rotation: [0, 0, 0],
-    });
+  const transformMode = useRoomStore((state) => state.transformMode);
+  const setTransformMode = useRoomStore((state) => state.setTransformMode);
+  const removeObject = useRoomStore((state) => state.removeObject);
+
+  const handleSwapOrAddFurniture = (modelUrl: string) => {
+    if (selectedObjectId) {
+      updateObject(selectedObjectId, { modelUrl });
+    } else {
+      addObject({
+        id: Math.random().toString(36).substring(7),
+        modelUrl,
+        position: [0, -2, 0], // Spawn at floor level
+        rotation: [0, 0, 0],
+      });
+    }
   };
 
   return (
@@ -71,7 +82,7 @@ export default function Page() {
               <div className="space-y-3">
                 <div 
                   className="p-4 border border-elysium-rosegold bg-white/[0.02] flex justify-between items-center cursor-pointer hover:bg-white/[0.05] transition-colors"
-                  onClick={() => handleAddFurniture('https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/bench-2/model.gltf')}
+                  onClick={() => handleSwapOrAddFurniture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Flamingo.glb')}
                 >
                   <div>
                     <p className="text-[11px] font-bold">The Nero Sectional</p>
@@ -81,7 +92,7 @@ export default function Page() {
                 </div>
                 <div 
                   className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity"
-                  onClick={() => handleAddFurniture('https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/chair-wood/model.gltf')}
+                  onClick={() => handleSwapOrAddFurniture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Parrot.glb')}
                 >
                   <div>
                     <p className="text-[11px] font-bold">Elysium Lounge</p>
@@ -91,7 +102,7 @@ export default function Page() {
                 </div>
                 <div 
                   className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity"
-                  onClick={() => handleAddFurniture('https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/table-wood/model.gltf')}
+                  onClick={() => handleSwapOrAddFurniture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Stork.glb')}
                 >
                   <div>
                     <p className="text-[11px] font-bold">Modular Sky Unit</p>
@@ -114,25 +125,36 @@ export default function Page() {
           
           <Scene />
 
-          {/* Minimap Overlay */}
-          <div className="absolute top-8 right-8 w-40 h-40 bg-[#0d0d0d] border border-white/10 p-2 shadow-2xl hidden lg:block z-10 pointer-events-none">
-            <div className="w-full h-full bg-white/[0.02] relative">
-              <div className="absolute w-20 h-2 bg-white/10 top-4 left-4"></div>
-              <div className="absolute w-2 h-20 bg-white/10 top-4 left-4"></div>
-              {/* Player Position Indicator */}
-              <div className="absolute w-3 h-3 bg-elysium-rosegold rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_#b76e79]"></div>
-              <div className="absolute top-1 right-2 text-[8px] text-gray-500 uppercase tracking-tighter font-mono">Floor 24</div>
-            </div>
-            <div className="absolute -bottom-6 left-0 text-[9px] uppercase tracking-widest text-gray-500">Top-down Minimap</div>
-          </div>
+          <Minimap />
 
           {/* Viewport Controls */}
           <div className="absolute bottom-8 right-8 flex gap-4 hidden sm:flex z-10">
+            {selectedObjectId && (
+              <div className="flex flex-col items-end gap-1 mr-4 border-r border-white/10 pr-4">
+                <span className="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Modify</span>
+                <button 
+                  onClick={() => removeObject(selectedObjectId)}
+                  className="w-12 h-12 bg-white/5 border border-red-900/50 flex items-center justify-center text-[10px] font-bold text-red-500 hover:bg-red-900/20 transition-colors"
+                >
+                  DEL
+                </button>
+              </div>
+            )}
             <div className="flex flex-col items-end gap-1">
-              <span className="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Camera Mode</span>
+              <span className="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Gizmo Mode</span>
               <div className="flex gap-2">
-                <button className="w-12 h-12 bg-white/5 border border-elysium-rosegold flex items-center justify-center text-[10px] font-bold text-elysium-rosegold">FPV</button>
-                <button className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center text-[10px] opacity-40 hover:opacity-100 transition-opacity">ISO</button>
+                <button 
+                  onClick={() => setTransformMode('translate')}
+                  className={`w-12 h-12 bg-white/5 border flex items-center justify-center text-[10px] font-bold transition-all ${transformMode === 'translate' ? 'border-elysium-rosegold text-elysium-rosegold' : 'border-white/10 opacity-40 hover:opacity-100'}`}
+                >
+                  MOVE
+                </button>
+                <button 
+                  onClick={() => setTransformMode('rotate')}
+                  className={`w-12 h-12 bg-white/5 border flex items-center justify-center text-[10px] font-bold transition-all ${transformMode === 'rotate' ? 'border-elysium-rosegold text-elysium-rosegold' : 'border-white/10 opacity-40 hover:opacity-100'}`}
+                >
+                  TURN
+                </button>
               </div>
             </div>
           </div>

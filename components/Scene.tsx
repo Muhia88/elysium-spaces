@@ -1,11 +1,27 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Environment, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useRoomStore } from '@/store/useRoomStore';
 import DynamicModel from './DynamicModel';
+
+// Updates the Zustand store with the camera's X and Z position
+function CameraTracker() {
+  const setCameraPosition = useRoomStore((state) => state.setCameraPosition);
+  
+  useFrame((state) => {
+    // Only update occasionally to reduce state churn overhead?
+    // or we can update directly inside Zustand without React reactivity for pure perf, 
+    // but React 18 handles this decently if Minimap is small.
+    // For a real app, you might use a ref for the minimap dot to completely bypass React cycle.
+    const pos = state.camera.position;
+    setCameraPosition([pos.x, pos.z]);
+  });
+  
+  return null;
+}
 
 // Placeholder for the baked environment.
 // The prompt states: "Assume the room environment (walls, floors) is loaded via useGLTF 
@@ -41,6 +57,7 @@ function RoomShell() {
 
 export default function Scene() {
   const objects = useRoomStore((state) => state.objects);
+  const setSelectedObject = useRoomStore((state) => state.setSelectedObject);
 
   return (
     <div className="absolute inset-0 z-0">
@@ -51,7 +68,13 @@ export default function Scene() {
           antialias: true,
         }}
         camera={{ position: [0, 2, 8], fov: 45 }}
+        onPointerMissed={(e) => {
+          if (e.type === 'click') {
+            setSelectedObject(null);
+          }
+        }}
       >
+        <CameraTracker />
         <Suspense fallback={null}>
           {/* HDR Environment for realistic reflections on luxury models */}
           <Environment preset="apartment" />
@@ -68,6 +91,7 @@ export default function Scene() {
 
         {/* First-Person / Orbit simulation */}
         <OrbitControls 
+          makeDefault
           target={[0, 0, 0]}
           maxPolarAngle={Math.PI / 2 - 0.05} // Prevent camera from clipping exactly under the floor
           minDistance={2}
