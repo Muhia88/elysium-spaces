@@ -1,7 +1,21 @@
+'use client';
+
 import Link from 'next/link';
 import Scene from '@/components/Scene';
+import { useRoomStore } from '@/store/useRoomStore';
 
 export default function Page() {
+  const addObject = useRoomStore((state) => state.addObject);
+
+  const handleAddFurniture = (modelUrl: string) => {
+    addObject({
+      id: Math.random().toString(36).substring(7),
+      modelUrl,
+      position: [0, -2, 0], // Spawn at floor level
+      rotation: [0, 0, 0],
+    });
+  };
+
   return (
     <div className="w-full h-screen bg-elysium-black text-white font-sans overflow-hidden flex flex-col relative">
       {/* Header Navigation */}
@@ -55,21 +69,30 @@ export default function Page() {
             <section>
               <h3 className="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Seating Solutions</h3>
               <div className="space-y-3">
-                <div className="p-4 border border-elysium-rosegold bg-white/[0.02] flex justify-between items-center cursor-pointer">
+                <div 
+                  className="p-4 border border-elysium-rosegold bg-white/[0.02] flex justify-between items-center cursor-pointer hover:bg-white/[0.05] transition-colors"
+                  onClick={() => handleAddFurniture('https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/bench-2/model.gltf')}
+                >
                   <div>
                     <p className="text-[11px] font-bold">The Nero Sectional</p>
                     <p className="text-[9px] text-gray-500 uppercase mt-0.5">Leather / Obsidian</p>
                   </div>
                   <p className="text-[10px] text-elysium-rosegold font-mono">$12,400</p>
                 </div>
-                <div className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity">
+                <div 
+                  className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity"
+                  onClick={() => handleAddFurniture('https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/chair-wood/model.gltf')}
+                >
                   <div>
                     <p className="text-[11px] font-bold">Elysium Lounge</p>
                     <p className="text-[9px] text-gray-500 uppercase mt-0.5">Velvet / Sage</p>
                   </div>
                   <p className="text-[10px] text-gray-400 font-mono">$8,900</p>
                 </div>
-                <div className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity">
+                <div 
+                  className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity"
+                  onClick={() => handleAddFurniture('https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/table-wood/model.gltf')}
+                >
                   <div>
                     <p className="text-[11px] font-bold">Modular Sky Unit</p>
                     <p className="text-[9px] text-gray-500 uppercase mt-0.5">Fabric / Pearl</p>
@@ -82,7 +105,7 @@ export default function Page() {
 
           <div className="mt-auto border-t border-white/5 pt-6">
             <p className="italic text-[13px] text-gray-400 leading-relaxed">"The future of living is personal. Welcome to your vision."</p>
-            <p className="text-[10px] uppercase tracking-widest text-elysium-rosegold mt-2">Collins Mang'oli, CEO</p>
+            <p className="text-[10px] uppercase tracking-widest text-elysium-rosegold mt-2">Daniel Muhia, MD</p>
           </div>
         </aside>
 

@@ -2,17 +2,15 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { Environment, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { useRoomStore } from '@/store/useRoomStore';
+import DynamicModel from './DynamicModel';
 
 // Placeholder for the baked environment.
 // The prompt states: "Assume the room environment (walls, floors) is loaded via useGLTF 
 // and already has baked lighting... use MeshBasicMaterial for the baked shell."
 function RoomShell() {
-  // Real implementation would look like:
-  // const { nodes, materials } = useGLTF('/models/room-baked.glb');
-  // return <primitive object={nodes.Scene} ... />
-
   return (
     <group>
       {/* Floor */}
@@ -42,6 +40,8 @@ function RoomShell() {
 }
 
 export default function Scene() {
+  const objects = useRoomStore((state) => state.objects);
+
   return (
     <div className="absolute inset-0 z-0">
       <Canvas
@@ -57,6 +57,13 @@ export default function Scene() {
           <Environment preset="apartment" />
           
           <RoomShell />
+
+          {/* Dynamically render all furniture items from Zustand state */}
+          {objects.map((obj) => (
+            <Suspense key={obj.id} fallback={null}>
+              <DynamicModel {...obj} />
+            </Suspense>
+          ))}
         </Suspense>
 
         {/* First-Person / Orbit simulation */}
