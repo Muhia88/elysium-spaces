@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-elysium-black: #0a0a0a;
+  --color-elysium-charcoal: #121212;
+  --color-elysium-rosegold: #b76e79;
+  --color-elysium-rosegold-light: #c0828b;
+  --color-elysium-rosegold-dark: #a15c66;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-elysium-black);
+    color: white;
+    font-family: var(--font-sans), sans-serif;
+  }
+}
