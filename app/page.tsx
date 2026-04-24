@@ -52,6 +52,23 @@ export default function Page() {
     }
   };
 
+  const [activeCategory, setActiveCategory] = useState<'seating' | 'electronics' | 'decor'>('seating');
+
+  // Hardcoded catalog (in a real app, fetch from Supabase/API)
+  const catalog = {
+    seating: [
+      { id: 's1', name: 'The Nero Sectional', material: 'Leather / Obsidian', price: '$12,400', url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Flamingo.glb' }, // Replace URL with '/your-sofa.glb'
+      { id: 's2', name: 'Elysium Lounge', material: 'Velvet / Sage', price: '$8,900', url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Parrot.glb' },
+    ],
+    electronics: [
+      { id: 'e1', name: 'OLED Cinema Display', material: 'Glass / Aluminum', price: '$18,000', url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Stork.glb' }, // Replace URL with '/your-tv.glb'
+      { id: 'e2', name: 'Devialet Phantom Reactor', material: 'Matte Black', price: '$3,200', url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Stork.glb' },
+    ],
+    decor: [
+      { id: 'd1', name: 'Bonsai Ficus Retusa', material: 'Organic', price: '$4,500', url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Flamingo.glb' }, 
+      { id: 'd2', name: 'Abstract Bronze Sculpture', material: 'Bronze', price: '$22,000', url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Parrot.glb' },
+    ]
+  };
   const handleSwapOrAddFurniture = (modelUrl: string) => {
     if (selectedObjectId) {
       updateObject(selectedObjectId, { modelUrl });
@@ -107,51 +124,46 @@ export default function Page() {
             <section>
               <h3 className="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Select Category</h3>
               <div className="grid grid-cols-3 gap-2">
-                <button className="h-10 bg-white/5 border border-elysium-rosegold flex items-center justify-center transition-colors">
-                  <div className="w-3 h-3 border border-elysium-rosegold"></div>
+                <button 
+                  onClick={() => setActiveCategory('seating')}
+                  className={`h-10 bg-white/5 border flex items-center justify-center transition-colors ${activeCategory === 'seating' ? 'border-elysium-rosegold' : 'border-white/10 opacity-40 hover:opacity-100'}`}
+                >
+                  <div className="w-3 h-3 border border-current text-white"></div>
                 </button>
-                <button className="h-10 bg-white/5 border border-white/10 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity">
-                  <div className="w-3 h-3 rounded-full border border-white"></div>
+                <button 
+                  onClick={() => setActiveCategory('electronics')}
+                  className={`h-10 bg-white/5 border flex items-center justify-center transition-colors ${activeCategory === 'electronics' ? 'border-elysium-rosegold' : 'border-white/10 opacity-40 hover:opacity-100'}`}
+                >
+                  <div className="w-3 h-3 rounded-full border border-current text-white"></div>
                 </button>
-                <button className="h-10 bg-white/5 border border-white/10 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity">
-                  <div className="w-3 h-3 rotate-45 border border-white"></div>
+                <button 
+                  onClick={() => setActiveCategory('decor')}
+                  className={`h-10 bg-white/5 border flex items-center justify-center transition-colors ${activeCategory === 'decor' ? 'border-elysium-rosegold' : 'border-white/10 opacity-40 hover:opacity-100'}`}
+                >
+                  <div className="w-3 h-3 rotate-45 border border-current text-white"></div>
                 </button>
               </div>
             </section>
 
             <section>
-              <h3 className="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Seating Solutions</h3>
+              <h3 className="text-[10px] uppercase tracking-widest text-gray-400 mb-3 flex justify-between">
+                <span>{activeCategory}</span>
+                <span className="text-elysium-rosegold">Options</span>
+              </h3>
               <div className="space-y-3">
-                <div 
-                  className="p-4 border border-elysium-rosegold bg-white/[0.02] flex justify-between items-center cursor-pointer hover:bg-white/[0.05] transition-colors"
-                  onClick={() => handleSwapOrAddFurniture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Flamingo.glb')}
-                >
-                  <div>
-                    <p className="text-[11px] font-bold">The Nero Sectional</p>
-                    <p className="text-[9px] text-gray-500 uppercase mt-0.5">Leather / Obsidian</p>
+                {catalog[activeCategory].map((item, idx) => (
+                  <div 
+                    key={item.id}
+                    className={`p-4 border bg-white/[0.02] flex justify-between items-center cursor-pointer hover:bg-white/[0.05] transition-colors ${idx === 0 ? 'border-elysium-rosegold' : 'border-white/5 opacity-70 hover:opacity-100'}`}
+                    onClick={() => handleSwapOrAddFurniture(item.url)}
+                  >
+                    <div>
+                      <p className="text-[11px] font-bold">{item.name}</p>
+                      <p className="text-[9px] text-gray-500 uppercase mt-0.5">{item.material}</p>
+                    </div>
+                    <p className="text-[10px] text-gray-400 font-mono">{item.price}</p>
                   </div>
-                  <p className="text-[10px] text-elysium-rosegold font-mono">$12,400</p>
-                </div>
-                <div 
-                  className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity"
-                  onClick={() => handleSwapOrAddFurniture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Parrot.glb')}
-                >
-                  <div>
-                    <p className="text-[11px] font-bold">Elysium Lounge</p>
-                    <p className="text-[9px] text-gray-500 uppercase mt-0.5">Velvet / Sage</p>
-                  </div>
-                  <p className="text-[10px] text-gray-400 font-mono">$8,900</p>
-                </div>
-                <div 
-                  className="p-4 border border-white/5 bg-white/[0.01] flex justify-between items-center opacity-50 hover:opacity-100 cursor-pointer transition-opacity"
-                  onClick={() => handleSwapOrAddFurniture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Stork.glb')}
-                >
-                  <div>
-                    <p className="text-[11px] font-bold">Modular Sky Unit</p>
-                    <p className="text-[9px] text-gray-500 uppercase mt-0.5">Fabric / Pearl</p>
-                  </div>
-                  <p className="text-[10px] text-gray-400 font-mono">$15,200</p>
-                </div>
+                ))}
               </div>
             </section>
           </div>
