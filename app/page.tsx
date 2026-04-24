@@ -1,11 +1,16 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Scene from '@/components/Scene';
 import Minimap from '@/components/Minimap';
 import { useRoomStore } from '@/store/useRoomStore';
+import { saveConfigurationToSupabase, hydrateConfigurationFromSupabase } from '@/lib/supabaseMock';
 
 export default function Page() {
+  const objects = useRoomStore((state) => state.objects);
+  const loadState = useRoomStore((state) => state.loadState);
+  
   const addObject = useRoomStore((state) => state.addObject);
   const updateObject = useRoomStore((state) => state.updateObject);
   const selectedObjectId = useRoomStore((state) => state.selectedObjectId);
@@ -13,6 +18,39 @@ export default function Page() {
   const transformMode = useRoomStore((state) => state.transformMode);
   const setTransformMode = useRoomStore((state) => state.setTransformMode);
   const removeObject = useRoomStore((state) => state.removeObject);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const configId = urlParams.get('config');
+      
+      if (configId) {
+        const loadedObjects = await hydrateConfigurationFromSupabase(configId);
+        if (loadedObjects) {
+          loadState(loadedObjects);
+        }
+      }
+      setIsHydrating(false);
+    };
+    init();
+  }, [loadState]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const configId = await saveConfigurationToSupabase(objects);
+      const newUrl = `${window.location.origin}${window.location.pathname}?config=${configId}`;
+      window.history.pushState({ path: newUrl }, '', newUrl);
+      alert(`Configuration saved successfully! Link generated:\n\n${newUrl}`);
+    } catch (e) {
+      alert("Failed to save configuration.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSwapOrAddFurniture = (modelUrl: string) => {
     if (selectedObjectId) {
@@ -44,8 +82,12 @@ export default function Page() {
           <Link href="mailto:contact@elysiumspaces.com" className="hover:text-elysium-rosegold transition-colors">Contact</Link>
         </nav>
         <div className="flex items-center gap-4">
-          <button className="hidden sm:block px-6 py-2 border border-elysium-rosegold text-elysium-rosegold text-[10px] uppercase tracking-widest hover:bg-elysium-rosegold hover:text-elysium-black transition-colors">
-            Save Configuration
+          <button 
+            onClick={handleSave} 
+            disabled={isSaving || isHydrating}
+            className="hidden sm:block px-6 py-2 border border-elysium-rosegold text-elysium-rosegold text-[10px] uppercase tracking-widest hover:bg-elysium-rosegold hover:text-elysium-black transition-colors disabled:opacity-50"
+          >
+            {isSaving ? 'Saving...' : 'Save Configuration'}
           </button>
           <button className="px-6 py-2 bg-elysium-rosegold text-elysium-black text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-black transition-colors">
             Inquire
